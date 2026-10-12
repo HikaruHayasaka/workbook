@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AB-900 問題集</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--text:#1d2330;--muted:#5d6678;--line:#dde1e8;--accent:#2f5bd3;--ok:#1d8a4e;--okbg:#e7f6ee;--ng:#c2372f;--ngbg:#fcebea}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171d;--card:#1d2129;--text:#e7eaf0;--muted:#9aa3b5;--line:#323845;--accent:#7b9cff;--ok:#5ccf8e;--okbg:#17321f;--ng:#ff7d75;--ngbg:#3a1c1b}}
+:root[data-theme="dark"]{--bg:#14171d;--card:#1d2129;--text:#e7eaf0;--muted:#9aa3b5;--line:#323845;--accent:#7b9cff;--ok:#5ccf8e;--okbg:#17321f;--ng:#ff7d75;--ngbg:#3a1c1b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.6}
+main{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:1.35rem;margin:0 0 4px}
+.sub{color:var(--muted);font-size:.9rem;margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:16px}
+label.row{display:block;margin:6px 0}
+.group{margin-bottom:14px}
+.group h2{font-size:.95rem;margin:0 0 6px}
+button{font:inherit;cursor:pointer;border-radius:8px}
+.primary{background:var(--accent);color:#fff;border:none;padding:10px 20px;font-weight:600}
+.ghost{background:transparent;color:var(--text);border:1px solid var(--line);padding:9px 16px}
+.opts{display:grid;gap:8px;margin-top:14px}
+.opt{text-align:left;background:var(--card);color:var(--text);border:1px solid var(--line);padding:12px 14px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.correct{background:var(--okbg);border-color:var(--ok)}
+.opt.wrong{background:var(--ngbg);border-color:var(--ng)}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem}
+.bar{height:6px;background:var(--line);border-radius:3px;margin:8px 0 14px;overflow:hidden}
+.bar div{height:100%;background:var(--accent);transition:width .2s}
+.q{font-size:1.05rem;font-weight:600}
+.feedback{margin-top:14px;padding:12px 14px;border-radius:8px;border-left:4px solid}
+.feedback.ok{background:var(--okbg);border-color:var(--ok)}
+.feedback.ng{background:var(--ngbg);border-color:var(--ng)}
+.verdict{font-weight:700}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.big{font-size:2.4rem;font-weight:700;margin:4px 0}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
+td.num,th.num{text-align:right}
+.miss{border-top:1px solid var(--line);padding:10px 0;font-size:.9rem}
+.miss b{display:block}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>AB-900 問題集</h1>
+<p class="sub">Microsoft 365 Copilot and Agent Administration Fundamentals</p>
+
+<section id="start">
+  <div class="card">
+    <div class="group"><h2>出題範囲</h2>
+      <label class="row"><input type="radio" name="dom" value="0" checked> すべて</label>
+      <label class="row"><input type="radio" name="dom" value="1"> ドメイン1：コア機能とオブジェクト</label>
+      <label class="row"><input type="radio" name="dom" value="2"> ドメイン2：データ保護とガバナンス</label>
+      <label class="row"><input type="radio" name="dom" value="3"> ドメイン3：Copilot・エージェント管理</label>
+    </div>
+    <div class="group"><h2>問題数</h2>
+      <label class="row"><input type="radio" name="num" value="10"> 10問</label>
+      <label class="row"><input type="radio" name="num" value="20" checked> 20問</label>
+      <label class="row"><input type="radio" name="num" value="0"> 全問</label>
+    </div>
+    <button class="primary" id="go">開始</button>
+  </div>
+  <div class="card">
+    <div class="meta"><strong style="color:var(--text)">これまでの記録</strong><button class="ghost" id="clear" style="padding:3px 10px;font-size:.8rem">記録を消去</button></div>
+    <div id="history" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<section id="quiz" class="hidden">
+  <div class="card">
+    <div class="meta"><span id="pos"></span><span id="tag"></span></div>
+    <div class="bar"><div id="prog"></div></div>
+    <div class="q" id="qtext"></div>
+    <div class="opts" id="opts"></div>
+    <div id="fb"></div>
+    <div class="actions"><button class="primary hidden" id="next">次へ</button><button class="ghost" id="quit">中断</button></div>
+  </div>
+</section>
+
+<section id="result" class="hidden">
+  <div class="card">
+    <div>正解率</div>
+    <div class="big" id="rate"></div>
+    <div id="detail" class="sub" style="margin:0"></div>
+    <div class="actions">
+      <button class="primary" id="retry">間違えた問題だけ再挑戦</button>
+      <button class="ghost" id="home">トップへ</button>
+    </div>
+  </div>
+  <div class="card" id="missbox"><strong>間違えた問題</strong><div id="misses"></div></div>
+</section>
+</main>
+
+<script>
+// 各問題：d=ドメイン, q=問題, c=[正解, 誤答...], e=解説（選択肢は出題時にシャッフル）
+const Q=[
+{d:1,q:"ユーザーに Microsoft 365 のライセンスを付与するとき、通常使う管理画面はどれか。",c:["Microsoft 365 管理センター","Microsoft Purview ポータル","Microsoft Defender ポータル","Teams 管理センター"],e:"ユーザーの追加やライセンス割り当ては Microsoft 365 管理センター（admin.microsoft.com）で行うのが基本です。"},
+{d:1,q:"メールボックス、配布グループ、メールフロールールを管理するのに適した管理センターはどれか。",c:["Exchange 管理センター","SharePoint 管理センター","Teams 管理センター","Microsoft Entra 管理センター"],e:"メール関連のオブジェクト（メールボックス・グループ・メールフロー）は Exchange 管理センターで扱います。"},
+{d:1,q:"サイトの作成状況や組織全体の外部共有レベルを設定する管理センターはどれか。",c:["SharePoint 管理センター","Exchange 管理センター","Microsoft Defender ポータル","Microsoft 365 Apps 管理センター"],e:"SharePoint/OneDrive のサイトや共有設定は SharePoint 管理センターで管理します。"},
+{d:1,q:"会議ポリシーやメッセージングポリシーを設定する場所はどれか。",c:["Teams 管理センター","Exchange 管理センター","Microsoft Purview ポータル","Microsoft Entra 管理センター"],e:"Teams のチーム、会議・メッセージング・アプリのポリシーは Teams 管理センターで設定します。"},
+{d:1,q:"ゼロトラストの考え方に「含まれない」ものはどれか。",c:["社内ネットワークからのアクセスは検証なしで信頼する","すべてのアクセスを明示的に検証する","必要最小限の権限だけを与える","侵害が起きている前提で設計する"],e:"ゼロトラストは「明示的に検証」「最小特権」「侵害を想定」が柱で、場所による暗黙の信頼を否定します。"},
+{d:1,q:"多要素認証（MFA）を導入する主な効果はどれか。",c:["パスワードが漏れても、別の要素がないとサインインしにくくなる","パスワードそのものが不要になる","管理者アカウントだけを保護する仕組みである","サインイン処理が高速になる"],e:"知識・所持・生体など複数の要素を組み合わせ、1つが破られても不正利用されにくくします。"},
+{d:1,q:"条件付きアクセスの説明として正しいものはどれか。",c:["ユーザー・場所・デバイス・リスクなどの条件に応じて、許可・ブロック・MFA要求などを決める","メールを条件に応じて自動転送する","ファイルを条件に応じて自動バックアップする","チームの作成を条件に応じて制限する"],e:"条件付きアクセスは Microsoft Entra ID の機能で、サインイン時のシグナルに基づいてアクセス制御を行います。"},
+{d:1,q:"Microsoft Entra の ID セキュアスコアが示すものはどれか。",c:["Microsoft 推奨の ID セキュリティ設定をどの程度満たしているか","ライセンスの消費率","デバイスのコンプライアンス準拠率","メールの迷惑メール検出率"],e:"推奨される構成（MFA の有効化など）への対応度合いをスコア化し、改善アクションを提示します。"},
+{d:1,q:"シングルサインオン（SSO）の主な利点はどれか。",c:["1回の認証で複数のアプリを利用できる","アプリごとに別のパスワードを強制できる","管理者が全員のパスワードを閲覧できる","アプリの処理速度が上がる"],e:"SSO は利便性を高め、パスワードの使い回しや覚えきれない問題も減らします。"},
+{d:1,q:"独自ドメインを Microsoft 365 に追加・確認する場所はどれか。",c:["Microsoft 365 管理センターの［設定］>［ドメイン］","［ユーザー］>［アクティブなユーザー］","［レポート］>［使用状況］","Teams 管理センターの［組織全体の設定］"],e:"カスタムドメインの追加や DNS レコードの確認は［設定］>［ドメイン］から行います。"},
+{d:1,q:"部署単位のグループにライセンスを割り当て、メンバーに自動で付与する仕組みはどれか。",c:["グループベースのライセンス","Privileged Identity Management","条件付きアクセス","セルフサービス パスワード リセット"],e:"グループにライセンスを割り当てると、メンバーの追加・削除に合わせてライセンスも自動で付与・解除されます。"},
+{d:1,q:"Privileged Identity Management（PIM）の目的はどれか。",c:["特権ロールを必要なときだけ期限付きで有効化する","全ユーザーに管理者権限を配る","パスワードを定期的に自動変更する","デバイスを自動登録する"],e:"PIM は Just-In-Time のロール有効化や承認・監査により、常時特権を持つアカウントを減らします。"},
+{d:1,q:"危険なサインインや漏洩した資格情報など、ID のリスクを検出する機能はどれか。",c:["Microsoft Entra ID Protection","Microsoft Purview 監査","Exchange メールフロールール","SharePoint 管理センター"],e:"ID Protection はサインインリスク・ユーザーリスクを評価し、リスクベースの条件付きアクセスと組み合わせて使えます。"},
+{d:1,q:"「MFA が通らない」「条件付きアクセスでブロックされた」原因を調べるのに最も適したものはどれか。",c:["Microsoft Entra のサインインログ","SharePoint の使用状況レポート","Exchange のメッセージ追跡のみ","Microsoft 365 のメッセージセンター"],e:"サインインログには失敗理由や適用された条件付きアクセスポリシーなどの詳細が記録されます。"},
+{d:1,q:"属性（部署・勤務地など）に基づいてメンバーが自動で更新されるグループはどれか。",c:["動的メンバーシップのグループ","割り当て済みメンバーシップのグループ","配布リスト","共有メールボックス"],e:"動的グループはルールに一致するユーザーを自動で追加・削除するため、手作業の管理を減らせます。"},
+{d:1,q:"1つのアドレス宛てのメールを複数人に届けたいときに使うものはどれか。",c:["配布リスト","セキュリティグループ（メール無効）","SharePoint サイト","管理単位"],e:"配布リストは宛先を1つにまとめてメールを一斉配信するためのオブジェクトです。"},
+{d:1,q:"Exchange の管理だけを担当するスタッフへの権限付与として最も適切なものはどれか。",c:["Exchange 管理者ロールを付与する","グローバル管理者ロールを付与する","全員でグローバル管理者アカウントを共有する","権限を付与せず作業を禁止する"],e:"最小特権の原則に従い、業務に必要なサービス固有の管理者ロールだけを割り当てます。"},
+{d:1,q:"グローバル管理者ロールについて正しいものはどれか。",c:["テナント内のほぼすべての設定とサービスを管理でき、付与は最小限にすべき","SharePoint だけを管理できる","閲覧専用のロールである","ライセンスを持つ全ユーザーに自動付与される"],e:"最も強い権限を持つため、保持者は少数に絞り、PIM などで保護することが推奨されます。"},
+{d:1,q:"退職者などのサインインを即座に止めたいとき、管理センターで行う操作はどれか。",c:["［アクティブなユーザー］で対象ユーザーのサインインをブロックする","Teams 管理センターでチームから外す","SharePoint サイトを削除する","メールフロールールを作成する"],e:"Microsoft 365 管理センターのユーザー詳細から「サインインをブロック」できます。"},
+{d:1,q:"取引先のユーザーをゲストとして招待し、Teams や SharePoint で共同作業させる仕組みはどれか。",c:["Microsoft Entra B2B コラボレーション","グループベースのライセンス","配布リスト","Privileged Identity Management"],e:"B2B コラボレーションで外部ユーザーをゲストとして招待し、制御されたアクセスを与えられます。"},
+{d:1,q:"Exchange や Teams で障害が起きていないかを確認する画面はどれか。",c:["Microsoft 365 管理センターのサービス正常性","Microsoft Purview のコンテンツ検索","Entra の監査ログ","SharePoint のサイト一覧"],e:"サービス正常性では現在のインシデントやアドバイザリを確認できます。今後の変更はメッセージセンターで告知されます。"},
+{d:1,q:"ユーザーや管理者の操作履歴（誰がいつ何をしたか）を検索する機能はどれか。",c:["Microsoft Purview の監査","Microsoft 365 管理センターの使用状況レポート","Teams の会議ポリシー","SharePoint のごみ箱"],e:"Purview の監査（Audit）で、各サービスのユーザー/管理者アクティビティを検索できます。"},
+{d:1,q:"ユーザー自身がパスワードをリセットできるようにする機能はどれか。",c:["セルフサービス パスワード リセット（SSPR）","条件付きアクセス","PIM","動的グループ"],e:"SSPR によりヘルプデスクへの問い合わせを減らせます。本人確認の方法を事前登録させます。"},
+{d:1,q:"Microsoft 365 における「テナント」の説明として正しいものはどれか。",c:["組織専用に用意された、ユーザー・データ・設定を含むクラウド上の環境","1人のユーザーアカウント","1つの SharePoint サイト","1つのメールボックス"],e:"組織が Microsoft 365 に申し込むと専用のテナントが作られ、Entra ID のディレクトリもここに属します。"},
+{d:1,q:"Teams のプライベートチャネルの特徴はどれか。",c:["チームの一部のメンバーだけが参加・閲覧できる","チーム全員が必ず閲覧できる","ゲストしか参加できない","ファイルを共有できない"],e:"機密性の高い話題を、チーム内の限られたメンバーだけで扱いたいときに使います。"},
+{d:1,q:"エンドポイント・メール・ID・クラウドアプリにまたがる脅威の検出と対応をまとめて行うのはどれか。",c:["Microsoft Defender XDR","Microsoft Purview コンプライアンス マネージャー","Microsoft 365 管理センターのレポート","SharePoint 管理センター"],e:"Defender XDR は複数領域のシグナルを相関させ、インシデント単位で調査・対応できます。"},
+{d:1,q:"自社開発アプリに Microsoft Graph を呼び出す権限を与えるため、Entra ID で行うことはどれか。",c:["アプリの登録を行い、API のアクセス許可を設定する","ユーザーにライセンスを付与する","配布リストを作る","サービス正常性を確認する"],e:"アプリの登録で ID（クライアント ID 等）と API アクセス許可を構成します。SaaS への SSO 設定はエンタープライズアプリケーションで行います。"},
+{d:1,q:"各サービスのアクティブユーザー数や利用量を把握し、ライセンス最適化に役立てる機能はどれか。",c:["Microsoft 365 管理センターの使用状況レポート","Purview の DLP アラート","Entra のサインインログのみ","Teams の会議ポリシー"],e:"使用状況レポートで、長期間使われていないライセンスの洗い出しや導入状況の把握ができます。"},
+{d:1,q:"現場で働くスタッフ向けに設計された Microsoft 365 のプラン系統はどれか。",c:["F（Frontline）プラン","E5 プラン","Business Premium","E3 プラン"],e:"F1/F3 はモバイル・Web 中心の現場作業者向けで、E3/E5 は全機能を含むエンタープライズ向けです。"},
+
+{d:2,q:"秘密度ラベルでできることとして正しいものはどれか。",c:["文書やメールを分類し、暗号化や透かしなどの保護を付ける","ユーザーにライセンスを割り当てる","チームのメンバーを管理する","サインインリスクを評価する"],e:"秘密度ラベル（Purview Information Protection）は分類と保護（暗号化・ヘッダー/フッター・透かし等）を担います。"},
+{d:2,q:"暗号化を設定した秘密度ラベルを付けたファイルはどうなるか。",c:["権限を与えられたユーザーだけが開ける","自動的に削除される","社内なら誰でも開ける","ファイルサイズが小さくなる"],e:"暗号化はファイルと一緒に移動するため、外部に持ち出されても権限のない人は開けません。"},
+{d:2,q:"ラベルに透かしやヘッダーを付ける主な目的はどれか。",c:["その文書の機密性を見た目で分かるようにする","印刷を完全に禁止する","ファイルを暗号化する","文書を自動で翻訳する"],e:"視覚的マーキングは閲覧者や印刷物に機密性を示すためのもので、それ自体はアクセス制御ではありません。"},
+{d:2,q:"ラベルポリシーの「既定のラベル」を設定するとどうなるか。",c:["新しく作った文書やメールに、指定したラベルが最初から付く","ラベルを誰も変更できなくなる","ラベル付き文書が削除される","外部共有がすべて止まる"],e:"既定ラベルによりラベルの付け忘れを減らせます。必要に応じてユーザーが変更できます。"},
+{d:2,q:"機密情報を含むファイルに、ユーザー操作なしでラベルを付けたい。使う機能はどれか。",c:["自動ラベル付けポリシー","保持ポリシー","コンテンツ検索","アクティビティ エクスプローラー"],e:"自動ラベル付けは、機密情報の種類などの条件に一致したコンテンツにサービス側でラベルを適用します。"},
+{d:2,q:"データ損失防止（DLP）ポリシーの目的はどれか。",c:["機密情報が不適切に共有・送信されるのを検知し、警告やブロックを行う","ファイルを定期的にバックアップする","ユーザーの送信メール数を制限する","パスワードを強制変更する"],e:"DLP はメール・SharePoint・OneDrive・Teams・デバイスなどで機密情報の扱いを監視します。"},
+{d:2,q:"DLP ポリシーで保護対象にできる場所の組み合わせとして正しいものはどれか。",c:["Exchange・SharePoint・OneDrive・Teams・デバイスなど","オンプレミスのファイルサーバーのみ","Teams のみ","Web ブラウザーのみ"],e:"DLP は複数のワークロードを対象にでき、ポリシーごとに場所を選択します。"},
+{d:2,q:"DLP ポリシーを本番適用する前に、影響範囲を確かめたい。どうするのがよいか。",c:["シミュレーションモードで実行して一致状況を確認する","いきなりブロックで有効化する","グローバル管理者だけを対象にする","ポリシーを作らずに様子を見る"],e:"シミュレーションでは実際にブロックせず、どのコンテンツが一致するかを事前に把握できます。"},
+{d:2,q:"DLP の「ポリシーヒント」の役割はどれか。",c:["操作中のユーザーに注意を表示し、自ら修正を促す","違反者のアカウントをロックする","管理者だけにメールを送る","ファイルを即時削除する"],e:"ポリシーヒントはユーザー教育にも役立ち、正当な理由がある場合の上書きを許可する設定も可能です。"},
+{d:2,q:"「機密情報の種類（SIT）」の例として正しいものはどれか。",c:["クレジットカード番号やマイナンバーなど、パターンで判定できる情報","1MB 以上のファイル","Teams のチャネル名","ファイルの作成日時"],e:"SIT は正規表現・キーワード・チェックサムなどで定義され、DLP や自動ラベル付けの条件に使われます。"},
+{d:2,q:"機密情報を含むアイテムが「どこに・どれだけ」あるかを確認する機能はどれか。",c:["コンテンツ エクスプローラー","アクティビティ エクスプローラー","サービス正常性","Copilot ダッシュボード"],e:"コンテンツ エクスプローラーはラベルや機密情報の種類ごとにアイテムの所在と件数を示します。"},
+{d:2,q:"ラベルの適用・変更・削除や DLP の一致など、データに関する操作の履歴を見る機能はどれか。",c:["アクティビティ エクスプローラー","コンテンツ エクスプローラー","コンプライアンス マネージャー","Teams 管理センター"],e:"アクティビティ エクスプローラーは「何が起きたか」、コンテンツ エクスプローラーは「何がどこにあるか」を見ます。"},
+{d:2,q:"保持ポリシーの目的はどれか。",c:["規則に基づき、データを一定期間残す、または期間後に削除する","パスワード履歴を保存する","ライセンスを一定期間確保する","メールを自動翻訳する"],e:"法令・社内規程に沿ってデータのライフサイクルを管理する仕組みです。"},
+{d:2,q:"保持ラベルと保持ポリシーの違いとして正しいものはどれか。",c:["保持ラベルは個々のアイテム、保持ポリシーはサイトやメールボックスなどの場所単位に適用する","保持ラベルはメール専用、保持ポリシーは文書専用","保持ラベルは削除専用、保持ポリシーは保持専用","違いはない"],e:"場所全体に一律の設定なら保持ポリシー、文書ごとに細かく変えたいなら保持ラベルを使います。"},
+{d:2,q:"訴訟対応のため、関連するメールやファイルを検索・保全・エクスポートするツールはどれか。",c:["Microsoft Purview eDiscovery","DLP","秘密度ラベル","Microsoft 365 管理センターのレポート"],e:"eDiscovery ではケースを作り、検索・保留（ホールド）・レビュー・エクスポートを一元管理します。"},
+{d:2,q:"eDiscovery の「保留（ホールド）」の目的はどれか。",c:["調査対象のデータが削除・改変されないよう保全する","データを暗号化する","データへのアクセスを本人だけに制限する","データを自動的にバックアップ先へ移す"],e:"保留をかけると、ユーザーが削除しても調査に必要なコンテンツは保持されます。"},
+{d:2,q:"退職予定者による大量ダウンロードや USB へのコピーなど、内部からのリスク行動を検知する機能はどれか。",c:["インサイダー リスク管理","コミュニケーション コンプライアンス","Entra ID Protection","サービス正常性"],e:"インサイダー リスク管理は HR データなどのシグナルと組み合わせて、内部起因のデータ流出リスクを検知します。"},
+{d:2,q:"メールや Teams のメッセージに含まれるハラスメントや不適切な発言を検出する機能はどれか。",c:["コミュニケーション コンプライアンス","インサイダー リスク管理","データ ライフサイクル管理","コンテンツ エクスプローラー"],e:"機械学習の分類子などを使ってメッセージを検出し、レビュー担当者が調査します。"},
+{d:2,q:"規制や標準（ISO 27001 など）への対応状況をスコア化し、改善アクションを示す機能はどれか。",c:["コンプライアンス マネージャー","ID セキュアスコア","Defender XDR","eDiscovery"],e:"コンプライアンス マネージャーは推奨される管理策の実施状況から「コンプライアンス スコア」を算出します。"},
+{d:2,q:"Microsoft Purview の DSPM for AI の役割はどれか。",c:["Copilot などの AI 利用に伴うデータリスクを可視化し、保護ポリシーの適用を支援する","AI モデルの学習コストを管理する","AI でネットワーク侵入を検知する","AI サービスの稼働率を監視する"],e:"AI 向けデータセキュリティ態勢管理として、機密データへのアクセスや過剰共有のリスクを把握できます。"},
+{d:2,q:"Microsoft 365 Copilot が回答に使う組織内データの範囲として正しいものはどれか。",c:["質問したユーザー本人がアクセス権を持つデータだけ","テナント内のすべてのデータ","グローバル管理者が見られるデータ","Copilot 専用アカウントが持つデータ"],e:"Copilot は Microsoft Graph 経由で、ユーザーの既存の権限の範囲内でのみデータを参照します。"},
+{d:2,q:"アクセス権のないファイルについて Copilot に質問した場合、どうなるか。",c:["Copilot はそのファイルの内容を回答に使わない","Copilot が内容を要約して答える","ファイルが自動的に共有される","管理者に承認依頼が届く"],e:"権限の継承により、本人が開けないコンテンツは Copilot も参照しません。"},
+{d:2,q:"Copilot 導入前に「過剰共有」への対策が重要とされる理由はどれか。",c:["権限が広すぎるデータは、本来見せたくない人の Copilot 回答にも使われ得るから","Copilot は共有設定を無視するから","過剰共有があると Copilot が起動しないから","ライセンス費用が増えるから"],e:"Copilot は権限を尊重しますが、権限そのものが広すぎると情報が見つけやすくなってしまいます。"},
+{d:2,q:"Copilot と既存のデータ保護機能の関係として正しいものはどれか。",c:["秘密度ラベルや DLP などの既存の保護は Copilot 利用時にも尊重される","Copilot には一切の保護が効かない","Copilot 用に保護機能を一から作り直す必要がある","Copilot 利用時は保護機能を無効化する必要がある"],e:"ラベルの使用権限や DLP ポリシーは Copilot のやり取りにも適用されます。"},
+{d:2,q:"Microsoft 365 Copilot のプロンプトや応答の扱いとして正しいものはどれか。",c:["基盤となる大規模言語モデルの学習には使われない","すべて公開の Web に保存される","他社テナントと共有される","自動的に広告に利用される"],e:"組織のデータは Microsoft 365 のサービス境界内で扱われ、基盤モデルのトレーニングには使われません。"},
+{d:2,q:"過剰共有されている SharePoint サイトを洗い出すのに役立つものはどれか。",c:["SharePoint Advanced Management のデータ アクセス ガバナンス レポート","Teams の会議ポリシー","Exchange のメッセージ追跡","Entra のサインインログ"],e:"「全員」に共有されたサイトや共有リンクが多いサイトなどをレポートで特定できます。"},
+{d:2,q:"機密プロジェクトのサイトに、特定グループのメンバーしか入れないようにする機能はどれか。",c:["制限付きアクセス制御（SharePoint Advanced Management）","既定のラベル","サービス正常性","グループベースのライセンス"],e:"指定したグループ外のユーザーは、個別に共有を受けていてもサイトにアクセスできなくなります。"},
+{d:2,q:"SharePoint の外部共有を「既存のゲスト」にした場合の動作はどれか。",c:["すでにディレクトリにいるゲストとだけ共有でき、新しいゲストは招待できない","匿名リンクで誰とでも共有できる","新しいゲストも自由に招待できる","社内の人とも共有できなくなる"],e:"共有レベルは「すべてのユーザー」「新規および既存のゲスト」「既存のゲスト」「組織内のみ」の順に厳しくなります。"},
+{d:2,q:"Microsoft の責任ある AI の原則に「含まれない」ものはどれか。",c:["収益の最大化","公平性","プライバシーとセキュリティ","透明性"],e:"原則は公平性、信頼性と安全性、プライバシーとセキュリティ、包括性、透明性、説明責任の6つです。"},
+
+{d:3,q:"Microsoft 365 Copilot を使うためのライセンスの考え方として正しいものはどれか。",c:["対象となる Microsoft 365 のベースライセンスに Copilot アドオンを追加する","Copilot ライセンス単体で何も要らない","Azure サブスクリプションだけあればよい","Windows のライセンスだけあればよい"],e:"E3/E5、Business Standard/Premium などの対象プランに Copilot ライセンスを追加して利用します。"},
+{d:3,q:"Copilot ライセンスをユーザーに割り当てる一般的な方法はどれか。",c:["Microsoft 365 管理センターでユーザーまたはグループに割り当てる","Teams 管理センターのアプリ設定で割り当てる","Purview ポータルで割り当てる","SharePoint 管理センターで割り当てる"],e:"他のライセンスと同様に管理センターから割り当てます。グループベースの割り当ても可能です。"},
+{d:3,q:"ユーザー単位の Copilot ライセンスと従量課金の違いとして正しいものはどれか。",c:["ユーザー単位は月額の固定費、従量課金は使った分だけ支払う変動費","従量課金は常に安い","ユーザー単位では一部機能しか使えない","違いはない"],e:"利用頻度の高いユーザーはライセンス、低い利用やエージェント利用は従量課金、と使い分けが検討されます。"},
+{d:3,q:"Copilot Chat のエージェント利用などで従量課金を有効にするとき、課金先として紐づけるものはどれか。",c:["Azure サブスクリプション","Exchange のメールボックス","SharePoint サイト","Teams のチーム"],e:"従量課金は Microsoft 365 管理センターで設定し、Azure サブスクリプションを通じて請求されます。"},
+{d:3,q:"Copilot とエージェントの違いとして最も適切なものはどれか。",c:["Copilot はユーザーとの対話で支援し、エージェントは特定の目的のタスクを指示や知識に基づいて実行する","エージェントは Copilot より常に高価","両者はまったく同じもの","Copilot だけが外部システムと連携できる"],e:"エージェントは特定業務に特化した指示・知識・アクションを持ち、自動化も担えます。"},
+{d:3,q:"組織での Copilot の利用状況（アクティブユーザー数など）を確認する方法はどれか。",c:["Microsoft 365 管理センターの Copilot 使用状況レポートや Copilot ダッシュボード","Azure Monitor のみ","Exchange のメッセージ追跡","Entra のサインインログのみ"],e:"導入状況や利用されている機能、効果の推定などを確認し、定着化に活用します。"},
+{d:3,q:"Copilot の Web 検索（Web グラウンディング）を無効にする目的はどれか。",c:["回答の根拠を組織内データに限定し、外部 Web を参照させないため","ライセンス費用を下げるため","応答を速くするため","Copilot 自体を削除するため"],e:"管理者はポリシーで Web コンテンツの参照を制御できます。"},
+{d:3,q:"Copilot Studio でエージェントを作るときに主に構成する要素はどれか。",c:["指示（目的）・ナレッジ・トピック・アクション（ツール）","サーバーの CPU とメモリ","ネットワークの帯域","ライセンス単価"],e:"何をするか、何を根拠に答えるか、どう会話を進めるか、何を実行するかを定義します。"},
+{d:3,q:"Copilot Studio の「トピック」の役割はどれか。",c:["特定の入力に対してエージェントがどう応答・分岐するかの会話の流れを定義する","エージェントの配色を決める","ライセンスを割り当てる","ネットワークを設定する"],e:"トピックにはトリガーとなる語句、質問、条件分岐、アクション呼び出しなどを組み込めます。"},
+{d:3,q:"Copilot Studio のエージェントのナレッジとして設定できるものはどれか。",c:["SharePoint、公開 Web サイト、Dataverse、アップロードしたファイルなど","Teams のチャネル名だけ","メールボックスだけ","Excel ファイルだけ"],e:"複数のナレッジソースを組み合わせて、根拠に基づく回答をさせることができます。"},
+{d:3,q:"SharePoint をナレッジにしたエージェントについて正しいものはどれか。",c:["利用するユーザーにそのサイトへのアクセス権がないと、内容は回答に使われない","サイトを全社公開にする必要がある","データがエージェントに複製され誰でも見られる","すべてのサイトを登録しなければならない"],e:"エージェントもユーザーの権限で SharePoint を参照するため、権限設計が重要です。"},
+{d:3,q:"エージェントが Salesforce や ServiceNow などの外部サービスとやり取りするために使うものはどれか。",c:["コネクタ","秘密度ラベル","保持ポリシー","配布リスト"],e:"Power Platform のコネクタやカスタムコネクタで、外部データの取得や更新を行えます。"},
+{d:3,q:"エージェントが実行できる「アクション」の例として正しいものはどれか。",c:["外部 API の呼び出し、フローの実行、データ更新やメール送信など","ライセンスの自動購入のみ","ネットワーク設定の変更のみ","パスワードの自動リセットのみ"],e:"Power Automate のフローやコネクタ、HTTP 要求などでタスクを自動化できます。"},
+{d:3,q:"エージェントが対応しきれない問い合わせを人の担当者に引き継ぐ機能はどれか。",c:["エスカレーション（有人への引き継ぎ）","権限昇格","ナレッジの削除","Web 検索の無効化"],e:"複雑な案件を人に渡すことで、利用者の満足度とサービス品質を保ちます。"},
+{d:3,q:"Copilot Studio でエージェントを公開前に確認する方法はどれか。",c:["組み込みのテスト パネルで会話を試す","本番公開してから利用者に試してもらう","別テナントに展開してテストする","ソースコードの単体テストを書く"],e:"テスト パネルでトピックの動作やナレッジの回答を確認し、問題を修正してから公開します。"},
+{d:3,q:"Copilot Studio エージェントの品質改善に使う分析指標として適切なものはどれか。",c:["会話数・解決率・エスカレーション率・満足度など","サーバーの温度","メールボックスの容量","SharePoint のテーマ"],e:"未解決の多いトピックなどを見つけ、ナレッジやトピックを改善します。"},
+{d:3,q:"Copilot Studio エージェントが使えるコネクタを組織として制限したい。どこで設定するか。",c:["Power Platform 管理センターのデータ ポリシー（DLP）","Exchange 管理センター","Teams の会議ポリシー","SharePoint のサイト設定"],e:"Power Platform のデータポリシーで、ビジネス用/非ビジネス用/ブロックのようにコネクタを分類して制御します。"},
+{d:3,q:"組織で使えるエージェントの展開・利用可能ユーザーの管理を行う場所として適切なものはどれか。",c:["Microsoft 365 管理センターのエージェント管理（統合アプリを含む）","Exchange 管理センター","Purview の監査","Entra のサインインログ"],e:"管理者はエージェントを全員・特定のユーザーやグループに展開したり、ブロックしたりできます。"},
+{d:3,q:"利用者が作ったエージェントを全社展開する前に、管理者がポリシー適合を確認する仕組みの目的はどれか。",c:["セキュリティやコンプライアンス上の問題がないかを確かめるため","エージェントの配色を統一するため","応答速度を上げるため","ライセンス費用をゼロにするため"],e:"承認プロセスを設けることで、無秩序なエージェントの拡散（シャドー化）を防ぎます。"},
+{d:3,q:"Copilot の「Researcher（リサーチツール）」エージェントが得意とするのはどれか。",c:["社内データと Web を横断した多段階の調査とレポート作成","パスワードのリセット","ネットワーク設定の変更","データベースのチューニング"],e:"複数の情報源を調べてまとめる、調査系のタスク向けです。"},
+{d:3,q:"Copilot の「Analyst（アナリスト）」エージェントが得意とするのはどれか。",c:["データを分析して傾向や示唆を引き出す","会議室の予約","メールの自動返信","ユーザーの作成"],e:"表データなどを読み解き、分析結果や可視化を提示します。"},
+{d:3,q:"Copilot Pages の用途として正しいものはどれか。",c:["Copilot の回答を、チームで共同編集できるページとして保存・共有する","ライセンスを購入する画面","管理者用の設定画面","使用状況レポート"],e:"Loop の技術をもとに、Copilot の出力を共同作業の素材として使えます。"},
+{d:3,q:"Copilot に良い結果を出させるプロンプトの書き方として適切なものはどれか。",c:["目的・背景・参照してほしい情報・期待する出力形式を具体的に書く","できるだけ1単語で書く","英語だけで書く","不要な個人情報をたくさん含める"],e:"「目標・コンテキスト・ソース・期待」を明確にすると回答の精度が上がります。"},
+{d:3,q:"Microsoft Graph が Copilot に果たす役割として正しいものはどれか。",c:["メール・ファイル・会議・チャットなど、ユーザーが見られる組織データへの入口になる","他社テナントのデータを取り込む","Copilot の回答速度を上げる","インターネットのみを検索する"],e:"Copilot は Graph を通じて、権限内の業務コンテキストを取得して回答を組み立てます。"}
+];
+
+const DN={1:"ドメイン1",2:"ドメイン2",3:"ドメイン3"};
+const KEY="ab900_history_v1";
+const $=id=>document.getElementById(id);
+let set=[],i=0,correct=0,missed=[],scopeLabel="";
+
+function shuffle(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;}
+function loadHist(){try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){return [];}}
+function saveHist(h){try{localStorage.setItem(KEY,JSON.stringify(h));}catch(e){}}
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+function renderHist(){
+  const h=loadHist();
+  if(!h.length){$("history").innerHTML='<div class="sub" style="margin:0">まだ記録はありません。</div>';return;}
+  const avg=Math.round(h.reduce((s,r)=>s+r.c/r.n,0)/h.length*100);
+  let t='<div class="sub" style="margin:0 0 8px">受験回数 '+h.length+' 回 ／ 平均正解率 '+avg+'%</div><table><tr><th>日時</th><th>範囲</th><th class="num">正解</th><th class="num">正解率</th></tr>';
+  h.slice().reverse().slice(0,30).forEach(r=>{t+='<tr><td>'+r.t+'</td><td>'+esc(r.s)+'</td><td class="num">'+r.c+'/'+r.n+'</td><td class="num">'+Math.round(r.c/r.n*100)+'%</td></tr>';});
+  $("history").innerHTML=t+'</table>';
+}
+
+function show(id){["start","quiz","result"].forEach(s=>$(s).classList.toggle("hidden",s!==id));window.scrollTo(0,0);}
+
+function begin(list,label){
+  set=shuffle(list).map(q=>({...q,opts:shuffle(q.c)}));
+  i=0;correct=0;missed=[];scopeLabel=label;show("quiz");render();
+}
+
+function render(){
+  const q=set[i];
+  $("pos").textContent=(i+1)+" / "+set.length+"問";
+  $("tag").textContent=DN[q.d];
+  $("prog").style.width=(i/set.length*100)+"%";
+  $("qtext").textContent=q.q;
+  $("fb").innerHTML="";$("next").classList.add("hidden");
+  const box=$("opts");box.innerHTML="";
+  q.opts.forEach((o,k)=>{
+    const b=document.createElement("button");b.className="opt";
+    b.textContent=String.fromCharCode(65+k)+". "+o;
+    b.onclick=()=>answer(b,o);box.appendChild(b);
+  });
+}
+
+function answer(btn,choice){
+  const q=set[i],ans=q.c[0],ok=choice===ans;
+  [...$("opts").children].forEach((b,k)=>{b.disabled=true;if(q.opts[k]===ans)b.classList.add("correct");});
+  if(ok)correct++;else{btn.classList.add("wrong");missed.push(q);}
+  $("fb").innerHTML='<div class="feedback '+(ok?"ok":"ng")+'"><div class="verdict">'+(ok?"○ 正解":"× 不正解")+'</div><div>正解：'+esc(ans)+'</div><div style="margin-top:4px">'+esc(q.e)+'</div></div>';
+  const n=$("next");n.textContent=i===set.length-1?"結果を見る":"次へ";n.classList.remove("hidden");n.focus();
+}
+
+function finish(){
+  const n=set.length,rate=Math.round(correct/n*100);
+  const d=new Date(),p=x=>String(x).padStart(2,"0");
+  const h=loadHist();h.push({t:d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()),s:scopeLabel,c:correct,n:n});saveHist(h);
+  $("rate").textContent=rate+"%";
+  $("detail").textContent=n+"問中 "+correct+"問正解（"+scopeLabel+"）";
+  $("retry").classList.toggle("hidden",!missed.length);
+  $("missbox").classList.toggle("hidden",!missed.length);
+  $("misses").innerHTML=missed.map(q=>'<div class="miss"><b>'+esc(q.q)+'</b>正解：'+esc(q.c[0])+'</div>').join("");
+  show("result");
+}
+
+$("go").onclick=()=>{
+  const dom=+document.querySelector('input[name=dom]:checked').value;
+  const num=+document.querySelector('input[name=num]:checked').value;
+  let list=dom?Q.filter(q=>q.d===dom):Q;
+  list=shuffle(list);if(num)list=list.slice(0,num);
+  begin(list,(dom?DN[dom]:"全範囲")+(num?" "+num+"問":" 全問"));
+};
+$("next").onclick=()=>{i++;if(i<set.length)render();else finish();};
+$("quit").onclick=()=>{if(confirm("中断してトップに戻りますか？（記録は残りません）")){renderHist();show("start");}};
+$("retry").onclick=()=>begin(missed,"間違えた問題の再挑戦");
+$("home").onclick=()=>{renderHist();show("start");};
+$("clear").onclick=()=>{if(confirm("記録をすべて消去しますか？")){saveHist([]);renderHist();}};
+renderHist();
+</script>
+</body>
+</html>
